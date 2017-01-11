@@ -13,7 +13,7 @@ const _ = require('lodash');
 // DEV
 const watch = require('gulp-watch');
 const browserSync = require("browser-sync");
-// const dirSync = require('gulp-directory-sync');
+const dirSync = require('gulp-directory-sync');
 
 // PROD
 const rimraf = require('gulp-rimraf');
@@ -25,12 +25,14 @@ const reload = browserSync.reload;
 const path = {
   build: {
     html: 'build/',
-    style: 'build/style/'
+    style: 'build/style/',
+    img: 'build/i/'
   },
   src: {
     style: 'src/style/*.scss',
     pug: 'src/*.pug',
-    pugTpl: '../framework/*.pug'
+    pugTpl: '../framework/*.pug',
+    img: 'src/i/'
   }
 };
 const config = {
@@ -67,6 +69,15 @@ gulp.task('style', () => {
     .pipe(reload({stream: true}));
 });
 
+gulp.task('img:sync', function() {
+  return gulp.src('')
+    .pipe(plumber())
+    .pipe(
+      dirSync(path.src.img, path.build.img, {printSummary: true}
+    ))
+    .pipe(browserSync.stream());
+});
+
 gulp.task('pug', ['lint'], () => {
   return gulp.src(path.src.pug)
     .pipe(plumber())
@@ -76,11 +87,8 @@ gulp.task('pug', ['lint'], () => {
       const data = _.merge(dataStatic, dataDynamic);
       return {data: data};
     }))
-    // .pipe(gulpData( () => {
-    //  return requireUncached('./src/dataStatic.json')[LANG];
-    // }))
     .pipe(gulpData(() => {
-      return requireUncached('./src/config');
+      return {config: requireUncached('./src/config')};
     }))
     .pipe(gulpPug({pretty: true, DOCTYPE}))
     // .pipe(pugLinter())
@@ -93,14 +101,22 @@ gulp.task('watch', () => {
   watch([path.src.pug, path.src.pugTpl, './src/data.json', './src/config.js'], () => {
     gulp.start('pug');
   });
+  watch([path.src.style], () => {
+    gulp.start('style');
+  });
+  gulp.watch('./src/i/*.*', ['img:sync']);
 });
 
 // === PRODUCTION ===
 
 gulp.task('pug:prod', ['lint'], () => {
+  const dataStatic = requireUncached('../framework/data-template.json');
+  const dataDynamic = requireUncached('./src/data.json');
+  const dataStaticQuery = _.pick(dataStatic, _.keys(dataDynamic));
+  const data = _.mergeWith(dataStaticQuery, dataDynamic);
+
   _.mapKeys(data, (item, LANG) => {
-    console.log(item);
-    let file = pug.renderFile(`${__dirname}/src/index.pug`, _.merge({pretty: true, DOCTYPE}, item));
+    let file = pug.renderFile(`${__dirname}/src/index.pug`, _.merge({pretty: true, DOCTYPE}, {data: item}));
     fs.writeFileSync(`${__dirname}/src/${LANG}.html`, file);
   });
 
@@ -119,15 +135,9 @@ gulp.task('cleanGarbage', () => {
     .pipe(rimraf({force: true}));
 });
 
-gulp.task('prod', cb => {
-  runSequence('cleanBeforeBuild', 'style', 'pug:prod', 'cleanGarbage', cb);
-});
-
 gulp.task('webserver', () => {
   browserSync(config);
 });
-
-gulp.task('default', ['pug', 'webserver', 'watch']);
 
 gulp.task('lint', () => {
   return gulp
@@ -135,3 +145,11 @@ gulp.task('lint', () => {
     .pipe(pugLinter())
     .pipe(pugLinter.reporter());
 });
+
+gulp.task('default', cb => {
+  runSequence('img:sync', 'style', 'pug', 'webserver', 'watch');
+});
+gulp.task('prod', cb => {
+  runSequence('cleanBeforeBuild', 'style', 'pug:prod', 'cleanGarbage', cb);
+});
+
