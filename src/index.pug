@@ -1,0 +1,27 @@
+extends ../../framework/_layout
+
+block vars
+  -
+    const startBannerData = {
+
+    }
+
+block letter
+  +preheader(data)
+  +tb
+    +startBanner(data, startBannerData)
+  //- =====
+  +hr
+  //- =====
+  +tb
+    +h1= data.p0
+    +text= data.p1
+    +btn({
+      title: data.p2,
+      link: data.site
+    })
+  //- =====
+  +hr
+  //- =====
+  //- +loginAlter(data)
+  +footer(data)
