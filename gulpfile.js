@@ -9,20 +9,23 @@ const plumber = require('gulp-plumber');
 const fs = require('fs');
 const runSequence = require('run-sequence');
 const _ = require('lodash');
+const watch = require('gulp-watch');
+const rimraf = require('gulp-rimraf');
+const pugLinter = require('gulp-pug-linter');
+const path = require('path');
 
 // DEV
-const watch = require('gulp-watch');
 const browserSync = require("browser-sync");
+const reload = browserSync.reload;
+
 const dirSync = require('gulp-directory-sync');
 
 // PROD
-const rimraf = require('gulp-rimraf');
 const inlineCss = require('gulp-inline-css');
 
-const pugLinter = require('gulp-pug-linter');
 // UTILS
-const reload = browserSync.reload;
-const path = {
+const LANG = 'en';
+const pathConfig = {
   build: {
     html: 'build/',
     style: 'build/style/',
@@ -31,11 +34,16 @@ const path = {
   src: {
     style: 'src/style/*.scss',
     pug: 'src/*.pug',
-    pugTpl: '../framework/*.pug',
+    pugTpl: '../framework/**/*.pug',
     img: 'src/i/'
+  },
+  db: {
+    static: '../framework/data-template',
+    dynamic: './src/data',
+    config: './src/config'
   }
 };
-const config = {
+const servConfig = {
   server: {
     baseDir: "./build"
   },
@@ -52,9 +60,6 @@ function requireUncached($module) {
   return require($module);
 }
 
-const LANG = 'en';
-const DOCTYPE = 'html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"';
-
 // === DEV ===
 gulp.task('cleanBeforeBuild', () => {
   return gulp.src('./build/*.*', {read: false})
@@ -62,10 +67,10 @@ gulp.task('cleanBeforeBuild', () => {
 });
 
 gulp.task('style', () => {
-  return gulp.src(path.src.style)
+  return gulp.src(pathConfig.src.style)
     .pipe(plumber())
     .pipe(sass())
-    .pipe(gulp.dest(path.build.style))
+    .pipe(gulp.dest(pathConfig.build.style))
     .pipe(reload({stream: true}));
 });
 
@@ -73,35 +78,36 @@ gulp.task('img:sync', function() {
   return gulp.src('')
     .pipe(plumber())
     .pipe(
-      dirSync(path.src.img, path.build.img, {printSummary: true}
+      dirSync(pathConfig.src.img, pathConfig.build.img, {printSummary: true}
     ))
     .pipe(browserSync.stream());
 });
 
 gulp.task('pug', ['lint'], () => {
-  return gulp.src(path.src.pug)
+  return gulp.src(pathConfig.src.pug)
     .pipe(plumber())
     .pipe(gulpData(() => {
-      const dataStatic = requireUncached('../framework/data-template.json')[LANG];
-      const dataDynamic = requireUncached('./src/data.json')[LANG];
+      const dataStatic = requireUncached(pathConfig.db.static)[LANG];
+      const dataDynamic = requireUncached(pathConfig.db.dynamic)[LANG];
       const data = _.merge(dataStatic, dataDynamic);
-      return {data: data};
+      return {DATA: data};
     }))
     .pipe(gulpData(() => {
-      return {config: requireUncached('./src/config')};
+      return {CONFIG: requireUncached(pathConfig.db.config)};
     }))
-    .pipe(gulpPug({pretty: true, DOCTYPE}))
+    .pipe(gulpPug({pretty: true}))
     // .pipe(pugLinter())
     // .pipe(pugLinter.reporter())
-    .pipe(gulp.dest(path.build.html))
+    .pipe(gulp.dest(pathConfig.build.html))
     .pipe(reload({stream: true}));
 });
 
 gulp.task('watch', () => {
-  watch([path.src.pug, path.src.pugTpl, './src/data.json', './src/config.js'], () => {
-    gulp.start('pug');
+  watch([pathConfig.src.pug, pathConfig.src.pugTpl, pathConfig.db.dynamic, pathConfig.db.config], () => {
+    // gulp.start('pug');
+    gulp.start('prod');
   });
-  watch([path.src.style], () => {
+  watch([pathConfig.src.style], () => {
     gulp.start('style');
   });
   gulp.watch('./src/i/*.*', ['img:sync']);
@@ -110,24 +116,39 @@ gulp.task('watch', () => {
 // === PRODUCTION ===
 
 gulp.task('pug:prod', ['lint'], () => {
-  const dataStatic = requireUncached('../framework/data-template.json');
-  const dataDynamic = requireUncached('./src/data.json');
+  // get external data to pug
+  const dataStatic = requireUncached(pathConfig.db.static);
+  const dataDynamic = requireUncached(pathConfig.db.dynamic);
   const dataStaticQuery = _.pick(dataStatic, _.keys(dataDynamic));
   const data = _.mergeWith(dataStaticQuery, dataDynamic);
+  const config = requireUncached(pathConfig.db.config);
 
-  _.mapKeys(data, (item, LANG) => {
-    let file = pug.renderFile(`${__dirname}/src/index.pug`, _.merge({pretty: true, DOCTYPE}, {data: item}));
-    fs.writeFileSync(`${__dirname}/src/${LANG}.html`, file);
+  // get list of pug files
+  const jFilesPath = path.resolve(__dirname, 'src');
+  const jFiles = fs.readdirSync(jFilesPath);
+  const jFilesPug = jFiles.filter(item => {
+    return (/\.pug$/.test(item)) ? item : false;
+  });
+
+  // for each lang render each pug template
+  _.mapKeys(data, (langItem, LANG) => {
+    jFilesPug.forEach(item => {
+      let base = path.basename(item, '.pug');
+      let file = pug.renderFile(`${__dirname}/src/${item}`,
+        _.merge({pretty: true}, {DATA: langItem}, {CONFIG: config}));
+      fs.writeFileSync(`${__dirname}/src/${base}-${LANG}.html`, file);
+    });
   });
 
   return gulp.src('./src/*.html')
     .pipe(inlineCss(
       {
+        url: `file://${__dirname}/build/style.css`,
         preserveMediaQueries: true,
         applyStyleTags: false,
         removeStyleTags: false
       }))
-    .pipe(gulp.dest(path.build.html));
+    .pipe(gulp.dest(pathConfig.build.html));
 });
 
 gulp.task('cleanGarbage', () => {
@@ -136,12 +157,12 @@ gulp.task('cleanGarbage', () => {
 });
 
 gulp.task('webserver', () => {
-  browserSync(config);
+  browserSync(servConfig);
 });
 
 gulp.task('lint', () => {
   return gulp
-    .src(path.src.pug)
+    .src(pathConfig.src.pug)
     .pipe(pugLinter())
     .pipe(pugLinter.reporter());
 });
@@ -153,3 +174,27 @@ gulp.task('prod', cb => {
   runSequence('cleanBeforeBuild', 'style', 'pug:prod', 'cleanGarbage', cb);
 });
 
+// TODO SEND TO LITMUS
+// const litmus = require('gulp-litmus');
+// var configLit = {
+//   username: '',
+//   password: '',
+//   url: 'https://litmus.com',
+//   applications: [
+//     'applemail6',
+//     'gmailnew',
+//     'ffgmailnew',
+//     'chromegmailnew',
+//     'iphone4s'
+//   ]
+// };
+
+// gulp.task('lit', () => {
+//   return gulp.src('build/new_dep.html')
+//     .pipe(litmus(configLit))
+//     .pipe(gulp.dest('dist'));
+// });
+
+// TODO SEND TO FTP
+
+// TODO PIPES
