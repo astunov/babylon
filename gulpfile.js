@@ -24,7 +24,6 @@ const dirSync = require('gulp-directory-sync');
 const inlineCss = require('gulp-inline-css');
 
 // UTILS
-const LANG = 'en';
 const pathConfig = {
   build: {
     html: 'build/',
@@ -87,10 +86,20 @@ gulp.task('pug', ['lint'], () => {
   return gulp.src(pathConfig.src.pug)
     .pipe(plumber())
     .pipe(gulpData(() => {
-      const dataStatic = requireUncached(pathConfig.db.static)[LANG];
-      const dataDynamic = requireUncached(pathConfig.db.dynamic)[LANG];
-      const data = _.merge(dataStatic, dataDynamic);
-      return {DATA: data};
+      // const dataStatic = requireUncached(pathConfig.db.static);
+      // const dataDynamic = requireUncached(pathConfig.db.dynamic);
+      // const data = _.merge(dataStatic, dataDynamic);
+      const dataStatic = requireUncached(pathConfig.db.static);
+      const dFilesPath = path.resolve(__dirname, 'src/data');
+      const dFiles = fs.readdirSync(dFilesPath);
+      const letters = [];
+      dFiles.forEach(fileName => {
+        let file = requireUncached(`./src/data/${fileName}`);
+        let query = _.pick(dataStatic, _.keys(file));
+        let data = _.mergeWith(file, query);
+        letters.push(data);
+      });
+      return {DATA: letters};
     }))
     .pipe(gulpData(() => {
       return {CONFIG: requireUncached(pathConfig.db.config)};
@@ -104,8 +113,8 @@ gulp.task('pug', ['lint'], () => {
 
 gulp.task('watch', () => {
   watch([pathConfig.src.pug, pathConfig.src.pugTpl, pathConfig.db.dynamic, pathConfig.db.config], () => {
-    // gulp.start('pug');
-    gulp.start('prod');
+    gulp.start('pug');
+    // gulp.start('prod');
   });
   watch([pathConfig.src.style], () => {
     gulp.start('style');
@@ -116,27 +125,33 @@ gulp.task('watch', () => {
 // === PRODUCTION ===
 
 gulp.task('pug:prod', ['lint'], () => {
-  // get external data to pug
   const dataStatic = requireUncached(pathConfig.db.static);
-  const dataDynamic = requireUncached(pathConfig.db.dynamic);
-  const dataStaticQuery = _.pick(dataStatic, _.keys(dataDynamic));
-  const data = _.mergeWith(dataStaticQuery, dataDynamic);
   const config = requireUncached(pathConfig.db.config);
 
-  // get list of pug files
-  const jFilesPath = path.resolve(__dirname, 'src');
-  const jFiles = fs.readdirSync(jFilesPath);
-  const jFilesPug = jFiles.filter(item => {
-    return (/\.pug$/.test(item)) ? item : false;
+  const dFilesPath = path.resolve(__dirname, 'src/data');
+  const dFiles = fs.readdirSync(dFilesPath);
+  const letters = [];
+  dFiles.forEach(fileName => {
+    let file = requireUncached(`./src/data/${fileName}`);
+    let query = _.pick(dataStatic, _.keys(file));
+    let data = _.mergeWith(file, query);
+    letters.push(data);
   });
 
-  // for each lang render each pug template
-  _.mapKeys(data, (langItem, LANG) => {
-    jFilesPug.forEach(item => {
-      let base = path.basename(item, '.pug');
-      let file = pug.renderFile(`${__dirname}/src/${item}`,
+  letters.forEach((letter, number) => {
+    number += 1;
+    let item;
+    switch (number) {
+      case (1):
+        item = 'index';
+        break;
+      default:
+        item = number;
+    }
+    _.mapKeys(letter, (langItem, LANG) => {
+      let file = pug.renderFile(`${__dirname}/src/${item}.pug`,
         _.merge({pretty: true}, {DATA: langItem}, {CONFIG: config}));
-      fs.writeFileSync(`${__dirname}/src/${base}-${LANG}.html`, file);
+      fs.writeFileSync(`${__dirname}/src/${item}-${LANG}.html`, file);
     });
   });
 
