@@ -1,27 +1,76 @@
 extends ../../framework/_layout
 
 block vars
+  //- Unic letter settings
   -
     const startBannerData = {
+      // topLink: '',
+      // top: '',
+      // left: '',
+      // right: ''
+    }
+    // for multipy letterts define unic config
+    // CONFIG.task = '';
 
+    // for task "gulp pug"
+    if (Array.isArray(DATA)) {
+      DATA = DATA[0].en;
     }
 
 block letter
-  +preheader(data)
+  +preheader(DATA)
   +tb
-    +startBanner(data, startBannerData)
+    +startBanner(DATA, CONFIG, startBannerData)
   //- =====
   +hr
   //- =====
-  +tb
-    +h1= data.p0
-    +text= data.p1
+  +tb({'class': 'content-tb'})
+    +h1!= DATA.p0
+    +text!= DATA.p1
+    //- replace text
+    +text!= 'Randomm text with replace'.change({replace: 'Randomm', to: 'Random'})
+    //- replace text to link
+    +text!= 'Randomm text with replace to link'.change({replace: 'Randomm', to: 'Random', 'link': DATA.site})
+    //- utm
+    //- +text({style: 'font-size:10px'})!= utm({ place: 'body', source: 'button', target: 'index', })
+    //- btn
     +btn({
-      title: data.p2,
-      link: data.site
+      title: 'Lorem',
+      link: DATA.site + utm({ place: 'body', source: 'button', target: 'index', })
     })
+    //- table
+    +row({'class': 'tb__wrapper'})
+      +tb({'class': 'tb'})
+        tr
+          td: div th
+          td: div th
+          td: div th
+        tr
+          td: div lotem
+          td: div lorem
+          td: div lorem
+    //- stripe
+    +row
+      +tb({'class': 'promo-stripe'})
+        +row
+          a.promo-stripe__code() https://fbs.id/?ppu=ID partner
+    //- ul
+    +row
+      +ul(['lorem', 'ipsum', 'dolor'])
+    //- li
+    +row
+      +ol(['lorem', 'ipsum', 'dolor'])
+    //- quote
+    +row({'class': 'quote__outer'})
+      +quote({
+        auth: 'Abraham Lincoln',
+        content: ['Nearly all men can stand adversity, but if you ant to test a man\'s character, give him power.']
+      })
+    //- two col => need to refactor
+    //- +row
+      +two-col
   //- =====
   +hr
   //- =====
-  //- +loginAlter(data)
-  +footer(data)
+  +loginAlter(DATA)
+  +footer(DATA)
