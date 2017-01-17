@@ -31,9 +31,7 @@ const CONFIG = {
     }
   },
   type: '' || 'promo',
-  prodSrc: '',
-  src: this.prodSrc || './i/',
-  // alias: '',
+  src: '' || './i/',
   letterMaxWidth: 600
 };
 

@@ -17,6 +17,11 @@ const path = require('path');
 // DEV
 const browserSync = require("browser-sync");
 const reload = browserSync.reload;
+const replace = require('gulp-replace');
+// const sftp = require('gulp-sftp');
+// const sftpOptions = require('../framework/sftp');
+// var gutil = require( 'gulp-util' );
+// var ftp = require( 'vinyl-ftp' );
 
 const dirSync = require('gulp-directory-sync');
 
@@ -60,9 +65,25 @@ function requireUncached($module) {
 }
 
 // === DEV ===
+// gulp.task('deploy', () => {
+//   return gulp.src('build/**/*')
+//     .pipe(sftp({
+//       host: sftpOptions.host,
+//       user: sftpOptions.user,
+//       pass: sftpOptions.pass,
+//       remotePath: 'fbs/public_html/em535'
+//     }));
+// });
+
 gulp.task('cleanBeforeBuild', () => {
   return gulp.src('./build/*.*', {read: false})
     .pipe(rimraf({force: true}));
+});
+
+gulp.task('replace', () => {
+  return gulp.src('./src/data/*.json')
+    .pipe(replace(/(\[\[name\]\]|\[\[nama\]\]|\$Full name\$)/g, '$Full Name$'))
+    .pipe(gulp.dest('./src/data'));
 });
 
 gulp.task('style', () => {
@@ -82,7 +103,7 @@ gulp.task('img:sync', function() {
     .pipe(browserSync.stream());
 });
 
-gulp.task('pug', ['lint'], () => {
+gulp.task('pug', ['lint', 'replace'], () => {
   return gulp.src(pathConfig.src.pug)
     .pipe(plumber())
     .pipe(gulpData(() => {
@@ -186,7 +207,7 @@ gulp.task('default', cb => {
   runSequence('img:sync', 'style', 'pug', 'webserver', 'watch');
 });
 gulp.task('prod', cb => {
-  runSequence('cleanBeforeBuild', 'style', 'pug:prod', 'cleanGarbage', cb);
+  runSequence('cleanBeforeBuild', 'replace', 'style', 'pug:prod', 'cleanGarbage', cb);
 });
 
 // TODO SEND TO LITMUS

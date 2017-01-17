@@ -10,22 +10,23 @@
   "license": "ISC",
   "dependencies": {
     "browser-sync": "^2.2.3",
+    "eslint-config-google": "^0.7.1",
     "gulp": "^3.9.0",
+    "gulp-data": "^1.2.1",
+    "gulp-directory-sync": "^1.2.3",
     "gulp-inline-css": "^3.0.0",
     "gulp-jade": "^1.1.0",
     "gulp-plumber": "^1.0.1",
-    "gulp-sass": "^2.0.4",
-    "gulp-watch": "^4.3.5",
-    "gulp-data": "^1.2.1",
-    "gulp-directory-sync": "^1.2.3",
     "gulp-pug": "^3.2.0",
     "gulp-pug-linter": "^0.4.1",
+    "gulp-replace": "^0.5.4",
     "gulp-rimraf": "^0.2.1",
-    "mocha": "^3.2.0",
-    "rimraf": "^2.3.1",
-    "run-sequence": "^1.2.2",
-    "eslint-config-google": "^0.7.1",
+    "gulp-sass": "^2.0.4",
+    "gulp-watch": "^4.3.5",
     "lodash": "^4.17.3",
-    "pug": "^2.0.0-beta6"
+    "mocha": "^3.2.0",
+    "pug": "^2.0.0-beta6",
+    "rimraf": "^2.3.1",
+    "run-sequence": "^1.2.2"
   }
 }

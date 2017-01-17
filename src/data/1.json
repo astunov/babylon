@@ -1,6 +1,6 @@
 {
   "en": {
-    "p0": "Hello, [[name]]!",
+    "p0": "Hello, $Full Name$!",
     "p1": "FBS gives you a remarkable opportunity to spend a weekend in Rio de Janeiro. Hurry up, the promotion is almost over, you only have time until the 31st of July. Don’t miss your chance to spend two crazy days in the Paradise City.",
     "p2": "Give yourself some rest and forget about graphs, columns and trading for two beautiful days. Only with fresh mind and a tanned body you will be able to achieve new heights of Forex trading. Remember to party hard when you work hard.",
     "p3": "FBS gives you a chance to win a luxury trip to Rio for you and your companion. Enjoy the sun, the beach and everything else the city has to offer.",
@@ -14,7 +14,7 @@
   "es": {
     "header": "FBS: el territorio de los SUEÑOS",
     "preheader": "¡Solicite participar en la promoción \"Los Sueños se vuelven Realidad\" y gane!",
-    "p0": "Olá, [[name]]!",
+    "p0": "Olá, $Full Name$!",
     "p1": "A FBS lhe oferece a grande oportunidade de passar um fim de semana no Rio de Janeiro. Corra, a promoção está quase acabando. Você tem até o dia 31 de julho. Não perca a chance de passar dois dias agitados na Cidade do Paraíso.",
     "p2": "Tire um descanso e esqueça os gráficos, colunas e transações por dois lindos dias. Só com uma mente limpa e um corpo bronzeado é que você poderá alcançar novos patamares no mercado Forex. Lembre-se de festejar muito quando trabalhar muito.",
     "p3": "A FBS lhe dá a chance de ganhar uma viagem de luxo ao Rio para você e seu/sua acompanhante. Aproveite o sol, a praia e tudo mais que a cidade tem a oferecer.",
