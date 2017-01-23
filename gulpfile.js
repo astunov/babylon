@@ -145,6 +145,20 @@ gulp.task('watch', () => {
 
 // === PRODUCTION ===
 
+// temp task
+// to do pipes && all data not only one
+gulp.task('headers', () => {
+  const data = requireUncached('./src/data/1.json');
+  let headers =  [];
+  for (let key in data) {
+    let header = `<br>${key}<br>${data[key].header}`;
+    headers.push(header);
+  }
+  let file = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"></head><body>${headers}</body></html>`;
+  fs.writeFileSync(`${__dirname}/build/headers.html`, file);
+
+});
+
 gulp.task('pug:prod', ['lint'], () => {
   const dataStatic = requireUncached(pathConfig.db.static);
   const config = requireUncached(pathConfig.db.config);
