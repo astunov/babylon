@@ -15,15 +15,11 @@ const pugLinter = require('gulp-pug-linter');
 const path = require('path');
 
 // DEV
-const browserSync = require("browser-sync");
+const browserSync = require('browser-sync');
 const reload = browserSync.reload;
 const replace = require('gulp-replace');
-// const sftp = require('gulp-sftp');
-// const sftpOptions = require('../framework/sftp');
-// var gutil = require( 'gulp-util' );
-// var ftp = require( 'vinyl-ftp' );
-
 const dirSync = require('gulp-directory-sync');
+const mocha = require('gulp-mocha');
 
 // PROD
 const inlineCss = require('gulp-inline-css');
@@ -49,13 +45,13 @@ const pathConfig = {
 };
 const servConfig = {
   server: {
-    baseDir: "./build"
+    baseDir: './build'
   },
   tunnel: false,
   host: 'localhost',
   port: 9000,
   open: false,
-  logPrefix: "astunov",
+  logPrefix: 'astunov',
   reloadDelay: 300
 };
 
@@ -65,15 +61,6 @@ function requireUncached($module) {
 }
 
 // === DEV ===
-// gulp.task('deploy', () => {
-//   return gulp.src('build/**/*')
-//     .pipe(sftp({
-//       host: sftpOptions.host,
-//       user: sftpOptions.user,
-//       pass: sftpOptions.pass,
-//       remotePath: 'fbs/public_html/em535'
-//     }));
-// });
 
 gulp.task('cleanBeforeBuild', () => {
   return gulp.src('./build/*.*', {read: false})
@@ -81,8 +68,9 @@ gulp.task('cleanBeforeBuild', () => {
 });
 
 gulp.task('replace', () => {
+
   return gulp.src('./src/data/*.json')
-    .pipe(replace(/(\[\[name\]\]|\[\[nama\]\]|\$Full name\$)/g, '$Full Name$'))
+    .pipe(replace(/\[\[name\]\]|\[\[nama\]\]|\$Full name\$|\[\[نام\]\]|【姓名】/gi, '$Full Name$'))
     .pipe(gulp.dest('./src/data'));
 });
 
@@ -103,18 +91,15 @@ gulp.task('img:sync', function() {
     .pipe(browserSync.stream());
 });
 
-gulp.task('pug', ['lint', 'replace'], () => {
+gulp.task('pug', () => {
   return gulp.src(pathConfig.src.pug)
     .pipe(plumber())
     .pipe(gulpData(() => {
-      // const dataStatic = requireUncached(pathConfig.db.static);
-      // const dataDynamic = requireUncached(pathConfig.db.dynamic);
-      // const data = _.merge(dataStatic, dataDynamic);
       const dataStatic = requireUncached(pathConfig.db.static);
       const dFilesPath = path.resolve(__dirname, 'src/data');
       const dFiles = fs.readdirSync(dFilesPath);
       const letters = [];
-      dFiles.forEach(fileName => {
+      dFiles.forEach((fileName) => {
         let file = requireUncached(`./src/data/${fileName}`);
         let query = _.pick(dataStatic, _.keys(file));
         let data = _.mergeWith(file, query);
@@ -145,20 +130,6 @@ gulp.task('watch', () => {
 
 // === PRODUCTION ===
 
-// temp task
-// to do pipes && all data not only one
-gulp.task('headers', () => {
-  const data = requireUncached('./src/data/1.json');
-  let headers =  [];
-  for (let key in data) {
-    let header = `<br>${key}<br>${data[key].header}`;
-    headers.push(header);
-  }
-  let file = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"></head><body>${headers}</body></html>`;
-  fs.writeFileSync(`${__dirname}/build/headers.html`, file);
-
-});
-
 gulp.task('pug:prod', ['lint'], () => {
   const dataStatic = requireUncached(pathConfig.db.static);
   const config = requireUncached(pathConfig.db.config);
@@ -166,7 +137,7 @@ gulp.task('pug:prod', ['lint'], () => {
   const dFilesPath = path.resolve(__dirname, 'src/data');
   const dFiles = fs.readdirSync(dFilesPath);
   const letters = [];
-  dFiles.forEach(fileName => {
+  dFiles.forEach((fileName) => {
     let file = requireUncached(`./src/data/${fileName}`);
     let query = _.pick(dataStatic, _.keys(file));
     let data = _.mergeWith(file, query);
@@ -175,18 +146,21 @@ gulp.task('pug:prod', ['lint'], () => {
 
   letters.forEach((letter, number) => {
     number += 1;
-    let item;
+    let srcName;
+    let destName;
     switch (number) {
       case (1):
-        item = 'index';
+        srcName = 'index';
+        destName = '';
         break;
       default:
-        item = number;
+        srcName = number;
+        destName = `${srcName}-`;
     }
     _.mapKeys(letter, (langItem, LANG) => {
-      let file = pug.renderFile(`${__dirname}/src/${item}.pug`,
+      let file = pug.renderFile(`${__dirname}/src/${srcName}.pug`,
         _.merge({pretty: true}, {DATA: langItem}, {CONFIG: config}));
-      fs.writeFileSync(`${__dirname}/src/${item}-${LANG}.html`, file);
+      fs.writeFileSync(`${__dirname}/src/${destName}${LANG}.html`, file);
     });
   });
 
@@ -217,34 +191,31 @@ gulp.task('lint', () => {
     .pipe(pugLinter.reporter());
 });
 
-gulp.task('default', cb => {
+gulp.task('test', () =>
+    gulp.src('./test/*.js', {read: false})
+        .pipe(mocha({reporter: 'nyan'}))
+);
+
+// temp task
+// to do pipes && all data not only one
+gulp.task('headers', () => {
+  const data = requireUncached('./src/data/1.json');
+  let headers =  [];
+  for (let key in data) {
+    let header = `<br>${key}<br>${data[key].header}`;
+    headers.push(header);
+  }
+  let file = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"></head><body>${headers}</body></html>`;
+  fs.writeFileSync(`${__dirname}/build/headers.html`, file);
+});
+
+gulp.task('default', (cb) => {
   runSequence('img:sync', 'style', 'pug', 'webserver', 'watch');
 });
-gulp.task('prod', cb => {
-  runSequence('cleanBeforeBuild', 'replace', 'style', 'pug:prod', 'cleanGarbage', cb);
+gulp.task('prod', (cb) => {
+  runSequence('cleanBeforeBuild', 'replace', 'test', 'style', 'pug:prod', 'cleanGarbage', cb);
 });
 
 // TODO SEND TO LITMUS
-// const litmus = require('gulp-litmus');
-// var configLit = {
-//   username: '',
-//   password: '',
-//   url: 'https://litmus.com',
-//   applications: [
-//     'applemail6',
-//     'gmailnew',
-//     'ffgmailnew',
-//     'chromegmailnew',
-//     'iphone4s'
-//   ]
-// };
-
-// gulp.task('lit', () => {
-//   return gulp.src('build/new_dep.html')
-//     .pipe(litmus(configLit))
-//     .pipe(gulp.dest('dist'));
-// });
-
 // TODO SEND TO FTP
-
 // TODO PIPES
