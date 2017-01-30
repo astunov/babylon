@@ -213,7 +213,7 @@ gulp.task('default', (cb) => {
   runSequence('img:sync', 'style', 'pug', 'webserver', 'watch');
 });
 gulp.task('prod', (cb) => {
-  runSequence('cleanBeforeBuild', 'replace', 'test', 'style', 'pug:prod', 'cleanGarbage', cb);
+  runSequence('cleanBeforeBuild', 'replace', 'test', 'style', 'headers', 'pug:prod', 'cleanGarbage', cb);
 });
 
 // TODO SEND TO LITMUS
