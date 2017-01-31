@@ -6,6 +6,6 @@
     "mocha": true
   },
   "rules": {
-    "spaced-comment": ["error", "always", { "markers": ["!", "="] }]
+    "comma-dangle": ["error", "never"]
   }
 }

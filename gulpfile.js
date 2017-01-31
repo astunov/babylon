@@ -15,10 +15,11 @@ const pugLinter = require('gulp-pug-linter');
 const path = require('path');
 
 // DEV
-const browserSync = require("browser-sync");
+const browserSync = require('browser-sync');
 const reload = browserSync.reload;
 const replace = require('gulp-replace');
 const dirSync = require('gulp-directory-sync');
+const mocha = require('gulp-mocha');
 
 // PROD
 const inlineCss = require('gulp-inline-css');
@@ -44,13 +45,13 @@ const pathConfig = {
 };
 const servConfig = {
   server: {
-    baseDir: "./build"
+    baseDir: './build'
   },
   tunnel: false,
   host: 'localhost',
   port: 9000,
   open: false,
-  logPrefix: "astunov",
+  logPrefix: 'astunov',
   reloadDelay: 300
 };
 
@@ -67,8 +68,9 @@ gulp.task('cleanBeforeBuild', () => {
 });
 
 gulp.task('replace', () => {
+
   return gulp.src('./src/data/*.json')
-    .pipe(replace(/(\[\[name\]\]|\[\[nama\]\]|\$Full name\$)/g, '$Full Name$'))
+    .pipe(replace(/\[\[name\]\]|\[\[nama\]\]|\$Full name\$|\[\[نام\]\]|【姓名】/gi, '$Full Name$'))
     .pipe(gulp.dest('./src/data'));
 });
 
@@ -97,7 +99,7 @@ gulp.task('pug', () => {
       const dFilesPath = path.resolve(__dirname, 'src/data');
       const dFiles = fs.readdirSync(dFilesPath);
       const letters = [];
-      dFiles.forEach(fileName => {
+      dFiles.forEach((fileName) => {
         let file = requireUncached(`./src/data/${fileName}`);
         let query = _.pick(dataStatic, _.keys(file));
         let data = _.mergeWith(file, query);
@@ -135,7 +137,7 @@ gulp.task('pug:prod', ['lint'], () => {
   const dFilesPath = path.resolve(__dirname, 'src/data');
   const dFiles = fs.readdirSync(dFilesPath);
   const letters = [];
-  dFiles.forEach(fileName => {
+  dFiles.forEach((fileName) => {
     let file = requireUncached(`./src/data/${fileName}`);
     let query = _.pick(dataStatic, _.keys(file));
     let data = _.mergeWith(file, query);
@@ -189,11 +191,29 @@ gulp.task('lint', () => {
     .pipe(pugLinter.reporter());
 });
 
-gulp.task('default', cb => {
+gulp.task('test', () =>
+    gulp.src('./test/*.js', {read: false})
+        .pipe(mocha({reporter: 'nyan'}))
+);
+
+// temp task
+// to do pipes && all data not only one
+gulp.task('headers', () => {
+  const data = requireUncached('./src/data/1.json');
+  let headers =  [];
+  for (let key in data) {
+    let header = `<br>${key}<br>${data[key].header}`;
+    headers.push(header);
+  }
+  let file = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"></head><body>${headers}</body></html>`;
+  fs.writeFileSync(`${__dirname}/build/headers.html`, file);
+});
+
+gulp.task('default', (cb) => {
   runSequence('img:sync', 'style', 'pug', 'webserver', 'watch');
 });
-gulp.task('prod', cb => {
-  runSequence('cleanBeforeBuild', 'replace', 'style', 'pug:prod', 'cleanGarbage', cb);
+gulp.task('prod', (cb) => {
+  runSequence('cleanBeforeBuild', 'replace', 'test', 'style', 'headers', 'pug:prod', 'cleanGarbage', cb);
 });
 
 // TODO SEND TO LITMUS
