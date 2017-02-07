@@ -4,6 +4,10 @@ block vars
   //- Unic letter settings
   //- &#8203;
   -
+    // for task "gulp pug"
+    if (Array.isArray(DATA)) {
+      DATA = DATA[0].en;
+    }
     const startBannerData = {
       // topLink: '',
       top: `${CONFIG.src}1_01.jpg`,
@@ -12,11 +16,6 @@ block vars
     }
     // for multipy letterts define unic config
     // CONFIG.task = '';
-
-    // for task "gulp pug"
-    if (Array.isArray(DATA)) {
-      DATA = DATA[0].en;
-    }
 
 block letter
   +preheader(DATA)
