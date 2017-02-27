@@ -31,7 +31,7 @@ const CONFIG = {
     }
   },
   type: '' || 'promo',
-  src: '' || './i/',
+  src: 'http://s.fbs.direct/custloads/761680031/2017/em575/1_01.jpg' || './i/',
   letterMaxWidth: 600
 };
 

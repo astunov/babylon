@@ -70,7 +70,7 @@ gulp.task('cleanBeforeBuild', () => {
 gulp.task('replace', () => {
 
   return gulp.src('./src/data/*.json')
-    .pipe(replace(/\[\[name\]\]|\[\[nama\]\]|\$Full name\$|\[\[نام\]\]|【姓名】/gi, '$Full Name$'))
+    .pipe(replace(/\[\[name\]\]|\[\[nama\]\]|\$Full name\$|\[\[نام\]\]|【姓名】|\[\[姓名\]\]/gi, '$Full Name$'))
     .pipe(gulp.dest('./src/data'));
 });
 
