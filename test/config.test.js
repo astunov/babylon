@@ -46,10 +46,6 @@ describe('Config', () => {
         assert(false);
       }
     });
-
-    it('is upcoming', () => {
-      assert(config.date >= formateDate(new Date()));
-    });
   });
 
   describe('Source', () => {
