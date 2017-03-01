@@ -37,7 +37,7 @@ block letter
     //- btn
     +btn({
       title: 'Lorem',
-      link: DATA.site + utm({ place: 'body', source: 'button', target: 'index', })
+      link: DATA.site + utm({ source: 'button', target: 'index', })
     })
     //- table
     +row({'class': 'tb__wrapper'})
@@ -57,10 +57,10 @@ block letter
           a.promo-stripe__code() https://fbs.id/?ppu=ID partner
     //- ul
     +row
-      +ul(['lorem', 'ipsum', 'dolor'])
+      +ul(['lorem', 'ipsum'])
     //- li
     +row
-      +ol(['lorem', 'ipsum', 'dolor'])
+      +ol(['lorem', 'ipsum'])
     //- quote
     +row({'class': 'quote__outer'})
       +quote({
