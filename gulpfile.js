@@ -21,6 +21,8 @@ const replace = require('gulp-replace');
 const dirSync = require('gulp-directory-sync');
 const mocha = require('gulp-mocha');
 
+const argv = require('yargs').argv;
+
 // PROD
 const inlineCss = require('gulp-inline-css');
 
@@ -54,6 +56,10 @@ const servConfig = {
   logPrefix: 'astunov',
   reloadDelay: 300
 };
+
+const task = __dirname.split('\\').pop();
+const prod = `../YandexDisk/TASK_Kirill/${task}/${argv.env}`;
+argv.env = argv.env || 'prod'
 
 function requireUncached($module) {
   delete require.cache[require.resolve($module)];
@@ -180,6 +186,12 @@ gulp.task('cleanGarbage', () => {
     .pipe(rimraf({force: true}));
 });
 
+gulp.task('cleanProd', () => {
+  return gulp.src(prod, {read: false})
+    .pipe(rimraf({force: true}));
+});
+
+
 gulp.task('webserver', () => {
   browserSync(servConfig);
 });
@@ -195,6 +207,11 @@ gulp.task('test', () =>
     gulp.src('./test/*.js', {read: false})
         .pipe(mocha({reporter: 'nyan'}))
 );
+
+gulp.task('copyToProd', () => {
+  return gulp.src('./build/*.*')
+  .pipe(gulp.dest(prod));
+});
 
 // temp task
 // to do pipes && all data not only one
@@ -213,9 +230,6 @@ gulp.task('default', (cb) => {
   runSequence('img:sync', 'style', 'pug', 'webserver', 'watch');
 });
 gulp.task('prod', (cb) => {
-  runSequence('cleanBeforeBuild', 'replace', 'test', 'style', 'headers', 'pug:prod', 'cleanGarbage', cb);
+  runSequence('cleanBeforeBuild', 'replace', 'test', 'style', 'headers', 'pug:prod', 'cleanGarbage', 'copyToProd', cb);
 });
 
-// TODO SEND TO LITMUS
-// TODO SEND TO FTP
-// TODO PIPES
