@@ -59,7 +59,7 @@ const servConfig = {
 
 const task = __dirname.split('\\').pop();
 argv.env = argv.env || 'prod'
-const prod = `../YandexDisk/TASK_Kirill/${task}/${argv.env}`;
+const prod = `../../TASK_Kirill/${task}/${argv.env}`;
 
 
 function requireUncached($module) {
