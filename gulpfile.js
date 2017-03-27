@@ -58,8 +58,9 @@ const servConfig = {
 };
 
 const task = __dirname.split('\\').pop();
-const prod = `../YandexDisk/TASK_Kirill/${task}/${argv.env}`;
 argv.env = argv.env || 'prod'
+const prod = `../YandexDisk/TASK_Kirill/${task}/${argv.env}`;
+
 
 function requireUncached($module) {
   delete require.cache[require.resolve($module)];
