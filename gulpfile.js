@@ -214,17 +214,20 @@ gulp.task('copyToProd', () => {
   .pipe(gulp.dest(prod));
 });
 
-// temp task
-// to do pipes && all data not only one
 gulp.task('headers', () => {
-  const data = requireUncached('./src/data/1.json');
-  let headers =  [];
-  for (let key in data) {
-    let header = `<br>${key}<br>${data[key].header}`;
-    headers.push(header);
-  }
-  let file = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"></head><body>${headers}</body></html>`;
-  fs.writeFileSync(`${__dirname}/build/headers.html`, file);
+  const dFiles = fs.readdirSync('./src/data');
+  if (!fs.existsSync(`${__dirname}/build`) && dFiles.length > 0) fs.mkdirSync(`${__dirname}/build`);
+  dFiles.forEach((dFile, number, arr) => {
+    let data =  require(`./src/data/${dFile}`);
+    let headers =  [];
+    for (let key in data) {
+      let header = `<br>${key}<br>${data[key].header}`;
+      headers.push(header);
+    }
+    let file = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"></head><body>${headers}</body></html>`;
+    let filePath = arr.length > 1 ? `${__dirname}/build/headers-${number + 1}.html` : `${__dirname}/build/headers.html`;
+    fs.writeFileSync(filePath, file);
+  })
 });
 
 gulp.task('default', (cb) => {
