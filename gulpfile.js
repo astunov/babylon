@@ -224,7 +224,7 @@ gulp.task('headers', () => {
       let header = `<br>${key}<br>${data[key].header}`;
       headers.push(header);
     }
-    let file = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"></head><body>${headers}</body></html>`;
+    let file = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"></head><body>${headers.join('')}</body></html>`;
     let filePath = arr.length > 1 ? `${__dirname}/build/headers-${number + 1}.html` : `${__dirname}/build/headers.html`;
     fs.writeFileSync(filePath, file);
   })
