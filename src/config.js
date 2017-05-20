@@ -14,7 +14,7 @@
  */
 
 const CONFIG = {
-  task: 'em430',
+  task: '$taskName$',
   date: '1611',
   source: {
     ems: {
@@ -31,7 +31,7 @@ const CONFIG = {
     }
   },
   type: '' || 'promo',
-  src: 'http://s.fbs.direct/custloads/761680031/2017/em575/1_01.jpg' || './i/',
+  src: 'http://s.fbs.direct/custloads/761680031/2017/$taskName$/1_01.jpg' || './i/',
   letterMaxWidth: 600
 };
 
