@@ -3,7 +3,7 @@
 /**
  * @namespace
  * @property {String}  task — task name, used in utm
- * @property {String}  date — actual date, used in utm
+ * @property {String}  date — actual date, used in utm ddmm format
  * @property {Object}  source — list of email clients
  * @property {Boolean}  source.* — email client, used in utm && some unics moves for each
  * @property {String}  type —
@@ -15,7 +15,7 @@
 
 const CONFIG = {
   task: '$taskName$',
-  date: '1611',
+  date: '$currentDay$',
   source: {
     ems: {
       use: true,
@@ -31,7 +31,7 @@ const CONFIG = {
     }
   },
   type: '' || 'promo',
-  src: 'http://s.fbs.direct/custloads/761680031/2017/$taskName$/1_01.jpg' || './i/',
+  src: 'http://s.fbs.direct/custloads/761680031/2017/$taskName$/' || './i/',
   letterMaxWidth: 600
 };
 
