@@ -1,11 +1,14 @@
 {
   "extends": "google",
-  "installedESLint": true,
   "env": {
     "browser": true,
-    "mocha": true
+    "mocha": true,
+    "es6": true
   },
   "rules": {
-    "comma-dangle": ["error", "never"]
+    "comma-dangle": ["error", "never"],
+    "semi": ["error", "never"],
+    "arrow-parens":["error", "as-needed"],
+    "object-curly-spacing": ["error", "always"]
   }
 }

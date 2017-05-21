@@ -10,7 +10,6 @@
   "license": "ISC",
   "dependencies": {
     "browser-sync": "^2.2.3",
-    "eslint-config-google": "^0.7.1",
     "gulp": "^3.9.0",
     "gulp-data": "^1.2.1",
     "gulp-directory-sync": "^1.2.3",
@@ -30,5 +29,9 @@
     "rimraf": "^2.3.1",
     "run-sequence": "^1.2.2",
     "yargs": "^6.6.0"
+  },
+  "devDependencies": {
+    "eslint": "^3.19.0",
+    "eslint-config-google": "^0.7.1"
   }
 }
