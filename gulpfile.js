@@ -290,6 +290,7 @@ gulp.task('prod', cb => {
     'cleanBeforeBuild',
     'replace',
     'test',
+    'img:sync',
     'style',
     'headers',
     'pug:prod',
